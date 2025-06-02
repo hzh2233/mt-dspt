@@ -29,7 +29,7 @@ export const routes: RouteRecordRaw[] = [
     path: '/cart',
     name: 'cart',
     component: () => import('@/views/CartView.vue'),
-    meta: { title: '购物车' }
+    meta: { title: '购物车', requiresAuth: true }
   },
   {
     path: '/checkout',
@@ -47,7 +47,13 @@ export const routes: RouteRecordRaw[] = [
     path: '/order/success',
     name: 'order-success',
     component: () => import('@/views/OrderSuccessView.vue'),
-    meta: { title: '订单完成', requiresAuth: true }
+    meta: { title: '订单完成' }
+  },
+  {
+    path: '/alipay/toSuccess',
+    name: 'payment-callback',
+    component: () => import('@/views/PaymentCallbackView.vue'),
+    meta: { title: '支付回调' }
   },
   {
     path: '/login',
@@ -68,9 +74,39 @@ export const routes: RouteRecordRaw[] = [
     meta: { title: '我的订单', requiresAuth: true }
   },
   {
+    path: '/order-detail/:orderId',
+    name: 'order-detail',
+    component: () => import('@/views/OrderDetailView.vue'),
+    meta: { title: '订单详情', requiresAuth: true }
+  },
+  {
     path: '/user/profile',
     name: 'user-profile',
     component: () => import('@/views/UserProfileView.vue'),
     meta: { title: '个人中心', requiresAuth: true }
+  },
+  {
+    path: '/coupons',
+    name: 'coupons',
+    component: () => import('@/views/CouponsView.vue'),
+    meta: { title: '优惠券中心' }
+  },
+  {
+    path: '/user/coupons',
+    name: 'user-coupons',
+    component: () => import('@/views/UserCouponsView.vue'),
+    meta: { title: '我的优惠券', requiresAuth: true }
+  },
+  {
+    path: '/user/address',
+    name: 'user-address',
+    component: () => import('@/views/UserAddressView.vue'),
+    meta: { title: '收货地址管理', requiresAuth: true }
+  },
+  {
+    path: '/user/favorites',
+    name: 'user-favorites',
+    component: () => import('@/views/UserFavoritesView.vue'),
+    meta: { title: '我的收藏', requiresAuth: true }
   }
 ]

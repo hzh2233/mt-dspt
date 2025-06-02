@@ -27,8 +27,12 @@ const priceRange = ref([0, 10000])
 const fetchProducts = async (categoryId: string) => { // 修改参数类型为string
   loading.value = true
   try {
-    const response = await productApi.getByCategory(categoryId)
-    products.value = response // 直接赋值，因为api返回的是Product[]类型
+    const response = await productApi.getByCategory({
+      category: parseInt(categoryId),
+      pageNum: 1,
+      pageSize: 20
+    })
+    products.value = response.products // 使用新的API返回格式
   } catch (error) {
     console.error('获取商品列表失败:', error)
     ElMessage.error('获取商品列表失败')
@@ -142,6 +146,7 @@ const handleProductClick = (product: Product) => {
               <h3>{{ product.title }}</h3>
               <p class="price">¥{{ product.price }}</p>
               <p class="sales">已售 {{ product.sales }} 件</p>
+              <p class="stock">库存: {{ product.stock || 0 }} 件</p>
             </div>
           </el-card>
         </el-col>
@@ -233,7 +238,13 @@ const handleProductClick = (product: Product) => {
     .sales {
       margin: 0;
       font-size: 12px;
-      color: #999;
+      color: #909399;
+    }
+
+    .stock {
+      margin: 4px 0 0;
+      font-size: 12px;
+      color: #909399;
     }
   }
 }
