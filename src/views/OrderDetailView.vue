@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
-import { ArrowLeft, Clock, Money, Location, CreditCard, User, Phone, Box, Van, Check } from '@element-plus/icons-vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { ArrowLeft, Clock, Money, Location, CreditCard, User, Phone, Box, Van, Check, RefreshLeft } from '@element-plus/icons-vue'
 import request from '@/utils/request'
+import { orderApi } from '@/services/api'
 
 // 订单数据类型
 interface OrderDetail {
@@ -57,8 +58,7 @@ const getOrderStatusText = (status: number) => {
     2: { text: '已发货', color: '#F0F9FF', textColor: '#67C23A' },
     3: { text: '已完成', color: '#F4F4F5', textColor: '#909399' },
     4: { text: '已取消', color: '#FEF0F0', textColor: '#F56C6C' },
-    5: { text: '退款中', color: '#FDF6EC', textColor: '#E6A23C' },
-    6: { text: '已退款', color: '#F4F4F5', textColor: '#909399' }
+    5: { text: '已退款', color: '#F4F4F5', textColor: '#909399' }
   }
   return statusMap[status] || { text: '未知状态', color: '#F4F4F5', textColor: '#909399' }
 }
@@ -146,6 +146,36 @@ const fetchOrderDetail = async () => {
 // 返回订单列表页面
 const goBack = () => {
   router.push('/user/orders')
+}
+
+// 处理退款
+const handleRefund = async () => {
+  if (!orderDetail.value) return
+  
+  try {
+    await ElMessageBox.confirm(
+      `确定要申请退款吗？退款金额为 ¥${orderDetail.value.totalAmount.toFixed(2)}`,
+      '申请退款',
+      {
+        confirmButtonText: '确定退款',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }
+    )
+    
+    // 调用退款API
+    await orderApi.refund(orderDetail.value.orderId.toString(), orderDetail.value.totalAmount)
+    
+    ElMessage.success('退款申请已提交，请等待处理')
+    
+    // 重新获取订单详情以更新状态
+    await fetchOrderDetail()
+  } catch (error: any) {
+    if (error !== 'cancel') {
+      console.error('退款申请失败:', error)
+      ElMessage.error('退款申请失败，请稍后重试')
+    }
+  }
 }
 
 // 页面挂载时获取数据
@@ -309,6 +339,15 @@ onMounted(() => {
           </el-button>
           <el-button v-if="orderDetail.status === 2" type="success" size="large">
             确认收货
+          </el-button>
+          <el-button 
+            v-if="orderDetail.status === 1 || orderDetail.status === 2 || orderDetail.status === 3" 
+            type="danger" 
+            size="large"
+            :icon="RefreshLeft"
+            @click="handleRefund"
+          >
+            申请退款
           </el-button>
           <el-button type="info" size="large">
             联系客服

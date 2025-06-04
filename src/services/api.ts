@@ -62,6 +62,26 @@ export const userApi = {
   // 用户登出
   logout(): Promise<void> {
     return request.post('/user/logout')
+  },
+
+  // 修改密码
+  changePassword(data: { oldPassword: string, newPassword: string }): Promise<void> {
+    return request.post('/user/change-password', data)
+  },
+
+  // 发送验证码（用于修改手机号）
+  sendVerificationCode(phone: string): Promise<void> {
+    return request.post('/user/send-code', { phone })
+  },
+
+  // 修改手机号
+  changePhone(data: { newPhone: string, verificationCode: string }): Promise<void> {
+    return request.post('/user/change-phone', data)
+  },
+
+  // 注销账户
+  deleteAccount(): Promise<void> {
+    return request.delete('/user/account')
   }
 }
 
@@ -293,7 +313,7 @@ export const orderApi = {
     status?: number
     page?: number
     size?: number
-  }): Promise<{ orders: Order[], total: number }> {
+  }): Promise<{ records: Order[], total: number, size: number, current: number, pages: number }> {
     return request.get('/orders/list', { params })
   },
 
@@ -315,6 +335,11 @@ export const orderApi = {
   // 申请退货退款
   requestRefund(orderId: string, itemId: number, reason: string): Promise<void> {
     return request.post('/orders/refund', { orderId: orderId.toString(), itemId, reason })
+  },
+
+  // 退款处理
+  refund(outTradeNo: string, amount: number): Promise<void> {
+    return request.post('/alipay/refund', null, { params: { outTradeNo, amount } })
   },
 
   // 删除订单

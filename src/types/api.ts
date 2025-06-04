@@ -85,7 +85,8 @@ export enum OrderStatus {
   PENDING_SHIPMENT = '待发货',
   SHIPPED = '已发货',
   COMPLETED = '已完成',
-  CANCELLED = '已取消'
+  CANCELLED = '已取消',
+  REFUNDED = '已退款'
 }
 
 // 订单商品类型

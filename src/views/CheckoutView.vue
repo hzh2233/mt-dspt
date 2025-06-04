@@ -92,7 +92,14 @@ onMounted(async () => {
     if (checkoutItemsData) {
       const checkoutData = JSON.parse(checkoutItemsData)
       orderItems.value = checkoutData.items || checkoutData
-      selectedCartIds.value = checkoutData.cartIds || orderItems.value.map(item => item.id)
+      // 如果有cartIds字段，使用它；否则从orderItems中提取有效的购物车ID（排除0和无效值）
+      if (checkoutData.cartIds) {
+        selectedCartIds.value = checkoutData.cartIds
+      } else {
+        selectedCartIds.value = orderItems.value
+          .map(item => item.id)
+          .filter(id => id && id > 0) // 过滤掉0和无效的ID
+      }
     } else {
       ElMessage.warning('没有选择要结算的商品')
       router.push('/cart')
@@ -420,8 +427,20 @@ const submitOrder = async () => {
     const response = await orderApi.create(orderData)
     
     ElMessage.success('订单创建成功')
-    // 订单提交成功后不清空购物车，用户可能还需要购买其他商品
-    // 只清除本地的结算商品缓存
+    
+    // 订单提交成功后，从购物车中移除已结算的商品
+    // 只有当存在有效的购物车ID时才执行删除操作
+    try {
+      const validCartIds = selectedCartIds.value.filter(id => id && id > 0)
+      if (validCartIds.length > 0) {
+        await cartStore.removeBatchItems(validCartIds)
+      }
+    } catch (error) {
+      console.error('移除购物车商品失败:', error)
+      // 即使移除失败也不影响订单流程，只记录错误
+    }
+    
+    // 清除本地的结算商品缓存
     localStorage.removeItem('checkoutItems')
     // 跳转到支付页面，订单号已经是字符串格式
     router.push(`/payment/${response.orderId}`)

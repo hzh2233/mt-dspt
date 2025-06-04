@@ -66,8 +66,7 @@ const getOrderStatusText = (status: number) => {
     2: { text: '已发货', color: '#F0F9FF', textColor: '#67C23A' },
     3: { text: '已完成', color: '#F4F4F5', textColor: '#909399' },
     4: { text: '已取消', color: '#FEF0F0', textColor: '#F56C6C' },
-    5: { text: '退款中', color: '#FDF6EC', textColor: '#E6A23C' },
-    6: { text: '已退款', color: '#F4F4F5', textColor: '#909399' }
+    5: { text: '已退款', color: '#F4F4F5', textColor: '#909399' }
   }
   return statusMap[status] || { text: '未知状态', color: '#F4F4F5', textColor: '#909399' }
 }
@@ -225,22 +224,33 @@ const deleteOrder = async (orderId: number) => {
 // 申请退款
 const applyRefund = async (orderId: number) => {
   try {
-    await ElMessageBox.confirm('确定要申请退款吗？退款申请提交后将由客服审核处理。', '申请退款', {
-      confirmButtonText: '确定申请',
-      cancelButtonText: '取消',
-      type: 'warning'
-    })
+    // 找到对应的订单
+    const order = orders.value.find(o => o.orderId === orderId)
+    if (!order) {
+      ElMessage.error('订单不存在')
+      return
+    }
     
-    // 这里应该调用退款API，暂时模拟
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    ElMessage.success('退款申请已提交，请耐心等待客服审核')
+    await ElMessageBox.confirm(
+      `确定要申请退款吗？退款金额为 ¥${order.totalAmount.toFixed(2)}`,
+      '申请退款',
+      {
+        confirmButtonText: '确定退款',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }
+    )
+    
+    // 调用退款API
+    await orderApi.refund(orderId.toString(), order.totalAmount)
+    ElMessage.success('退款申请已提交，请等待处理')
     
     // 重新获取订单列表
     await fetchOrders()
-  } catch (error) {
+  } catch (error: any) {
     if (error !== 'cancel') {
       console.error('申请退款失败:', error)
-      ElMessage.error('申请退款失败')
+      ElMessage.error('退款申请失败，请稍后重试')
     }
   }
 }
@@ -335,9 +345,7 @@ const getAvailableActions = (status: number) => {
       return ['contact', 'delete']
     case 4: // 已取消
       return ['delete', 'contact']
-    case 5: // 退款中
-      return ['contact']
-    case 6: // 已退款
+    case 5: // 已退款
       return ['delete', 'contact']
     default:
       return ['contact']

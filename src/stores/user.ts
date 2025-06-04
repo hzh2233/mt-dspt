@@ -117,6 +117,19 @@ export const useUserStore = defineStore('user', () => {
     }
   }
 
+  // 注销账户
+  const deleteAccount = async () => {
+    try {
+      // 调用后端注销账户接口
+      await userApi.deleteAccount()
+      // 注销成功后清除本地状态
+      clearUserState()
+    } catch (error) {
+      console.error('注销账户失败', error)
+      throw error // 重新抛出错误，让调用者处理
+    }
+  }
+
   return {
     userInfo,
     isLoggedIn,
@@ -125,6 +138,7 @@ export const useUserStore = defineStore('user', () => {
     setToken,
     setUserInfo,
     clearUserState,
-    logout
+    logout,
+    deleteAccount
   }
 })

@@ -108,5 +108,11 @@ export const routes: RouteRecordRaw[] = [
     name: 'user-favorites',
     component: () => import('@/views/UserFavoritesView.vue'),
     meta: { title: '我的收藏', requiresAuth: true }
+  },
+  {
+    path: '/user/security',
+    name: 'user-security',
+    component: () => import('@/views/UserSecurityView.vue'),
+    meta: { title: '账户安全', requiresAuth: true }
   }
 ]

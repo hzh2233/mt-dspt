@@ -269,9 +269,13 @@ const goToCheckout = () => {
     return
   }
   
-  // 将选中的商品信息保存到localStorage
+  // 将选中的商品信息和购物车ID保存到localStorage
   const selectedItemsData = enrichedCartItems.value.filter(item => selectedItems.value.includes(item.id))
-  localStorage.setItem('checkoutItems', JSON.stringify(selectedItemsData))
+  const checkoutData = {
+    items: selectedItemsData,
+    cartIds: selectedItems.value // 保存选中的购物车ID，用于订单提交后删除
+  }
+  localStorage.setItem('checkoutItems', JSON.stringify(checkoutData))
   router.push('/checkout')
 }
 </script>
