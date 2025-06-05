@@ -279,9 +279,7 @@ const buyNow = async () => {
         </div>
       </template>
       <div class="description-content">
-        <p v-if="product.description" class="description-text">
-          {{ product.description }}
-        </p>
+        <div v-if="product.description" class="description-text" v-html="product.description"></div>
         <p v-else class="no-description">
           暂无详细描述
         </p>
@@ -721,6 +719,129 @@ const buyNow = async () => {
         border-left: 5px solid #667eea;
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
         font-weight: 500;
+        
+        // 富文本内容样式
+        :deep(h1), :deep(h2), :deep(h3), :deep(h4), :deep(h5), :deep(h6) {
+          color: #2c3e50;
+          margin: 20px 0 15px 0;
+          font-weight: 600;
+          line-height: 1.4;
+        }
+        
+        :deep(h1) { font-size: 28px; }
+        :deep(h2) { font-size: 24px; }
+        :deep(h3) { font-size: 20px; }
+        :deep(h4) { font-size: 18px; }
+        :deep(h5) { font-size: 16px; }
+        :deep(h6) { font-size: 14px; }
+        
+        :deep(p) {
+          margin: 15px 0;
+          line-height: 1.8;
+        }
+        
+        :deep(ul), :deep(ol) {
+          margin: 15px 0;
+          padding-left: 30px;
+          
+          li {
+            margin: 8px 0;
+            line-height: 1.6;
+          }
+        }
+        
+        :deep(blockquote) {
+          margin: 20px 0;
+          padding: 15px 20px;
+          background: rgba(102, 126, 234, 0.1);
+          border-left: 4px solid #667eea;
+          border-radius: 8px;
+          font-style: italic;
+        }
+        
+        :deep(a) {
+          color: #667eea;
+          text-decoration: none;
+          transition: color 0.3s ease;
+          
+          &:hover {
+            color: #5a6fd8;
+            text-decoration: underline;
+          }
+        }
+        
+        :deep(img) {
+          max-width: 100%;
+          height: auto;
+          border-radius: 8px;
+          margin: 15px 0;
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        :deep(table) {
+          width: 100%;
+          border-collapse: collapse;
+          margin: 20px 0;
+          border-radius: 8px;
+          overflow: hidden;
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+          
+          th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+          }
+          
+          th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: 600;
+          }
+          
+          tr:nth-child(even) {
+            background: rgba(102, 126, 234, 0.05);
+          }
+        }
+        
+        :deep(code) {
+          background: rgba(102, 126, 234, 0.1);
+          padding: 2px 6px;
+          border-radius: 4px;
+          font-family: 'Courier New', monospace;
+          font-size: 14px;
+        }
+        
+        :deep(pre) {
+          background: #f8f9fa;
+          padding: 20px;
+          border-radius: 8px;
+          overflow-x: auto;
+          margin: 20px 0;
+          border-left: 4px solid #667eea;
+          
+          code {
+            background: none;
+            padding: 0;
+          }
+        }
+        
+        :deep(strong), :deep(b) {
+          font-weight: 700;
+          color: #2c3e50;
+        }
+        
+        :deep(em), :deep(i) {
+          font-style: italic;
+          color: #5a6c7d;
+        }
+        
+        :deep(hr) {
+          border: none;
+          height: 2px;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          margin: 30px 0;
+          border-radius: 2px;
+        }
       }
 
       .no-description {
