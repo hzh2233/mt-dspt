@@ -132,5 +132,20 @@ export const routes: RouteRecordRaw[] = [
     name: 'create-comment',
     component: () => import('@/views/CreateCommentView.vue'),
     meta: { requiresAuth: true }
+  },
+  {
+    path: '/customer-service',
+    name: 'customer-service',
+    component: () => import('@/views/CustomerServiceView.vue'),
+    meta: { title: 'AI智能客服', requiresAuth: true }
+  },
+  {
+    path: '/ai-settings',
+    name: 'AISettings',
+    component: () => import('@/views/AISettingsView.vue'),
+    meta: {
+      title: 'AI服务配置',
+      requiresAuth: true
+    }
   }
 ]

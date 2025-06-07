@@ -171,6 +171,19 @@ const goToComment = (productId: number) => {
   })
 }
 
+// 跳转到客服页面
+const goToCustomerService = () => {
+  if (!orderDetail.value) return
+  
+  router.push({
+    path: '/customer-service',
+    query: {
+      orderId: orderDetail.value.orderId.toString(),
+      from: 'order-detail'
+    }
+  })
+}
+
 // 处理退款
 const handleRefund = async () => {
   if (!orderDetail.value) return
@@ -345,6 +358,13 @@ onMounted(() => {
                   @click="goToComment(item.good.goodId)"
                 >
                   评价晒单
+                </el-button>
+                <el-button 
+                  type="success" 
+                  size="small"
+                  @click="goToCustomerService"
+                >
+                  联系客服
                 </el-button>
               </div>
             </div>

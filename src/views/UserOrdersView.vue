@@ -257,8 +257,13 @@ const applyRefund = async (orderId: number) => {
 
 // 联系客服
 const contactService = (orderId: number) => {
-  ElMessage.info(`正在为您转接客服，订单号：${orderId}`)
-  // 这里可以集成在线客服系统
+  router.push({
+    path: '/customer-service',
+    query: {
+      orderId: orderId.toString(),
+      source: 'order'
+    }
+  })
 }
 
 // 确认收货
