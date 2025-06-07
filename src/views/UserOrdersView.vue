@@ -64,7 +64,7 @@ const getOrderStatusText = (status: number) => {
     0: { text: '待付款', color: '#FFF2E8', textColor: '#E6A23C' },
     1: { text: '待发货', color: '#E8F4FD', textColor: '#409EFF' },
     2: { text: '已发货', color: '#F0F9FF', textColor: '#67C23A' },
-    3: { text: '已完成', color: '#F4F4F5', textColor: '#909399' },
+    3: { text: '已完成', color: '#F0F9FF', textColor: '#67C23A' },
     4: { text: '已取消', color: '#FEF0F0', textColor: '#F56C6C' },
     5: { text: '已退款', color: '#F4F4F5', textColor: '#909399' }
   }
@@ -342,7 +342,7 @@ const getAvailableActions = (status: number) => {
     case 2: // 已发货
       return ['confirm', 'contact', 'refund']
     case 3: // 已完成
-      return ['contact', 'delete']
+      return ['comment', 'contact', 'delete']
     case 4: // 已取消
       return ['delete', 'contact']
     case 5: // 已退款
@@ -350,6 +350,23 @@ const getAvailableActions = (status: number) => {
     default:
       return ['contact']
   }
+}
+
+// 评价晒单
+const commentAndShare = (orderId: number) => {
+  const items = orderItems.value[orderId] || []
+  if (items.length === 0) {
+    ElMessage.error('订单商品信息不完整，请稍后重试')
+    return
+  }
+  
+  // 将商品数据通过路由参数传递
+  router.push({
+    path: '/create-comment',
+    query: {
+      items: JSON.stringify(items)
+    }
+  })
 }
 </script>
 
@@ -445,7 +462,6 @@ const getAvailableActions = (status: number) => {
               </div>
               <div class="product-info">
                 <div class="product-name">{{ item.good.goodName }}</div>
-                <div class="product-desc">{{ item.good.description }}</div>
                 <div class="product-price">
                   <span class="unit-price">¥{{ item.unitPrice.toFixed(2) }}</span>
                   <span class="quantity">x{{ item.quantity }}</span>
@@ -541,6 +557,16 @@ const getAvailableActions = (status: number) => {
                 @click.stop="contactService(order.orderId)"
               >
                 联系客服
+              </el-button>
+              
+              <el-button 
+                v-if="action === 'comment'" 
+                type="success" 
+                size="small"
+                :icon="ChatDotRound"
+                @click.stop="commentAndShare(order.orderId)"
+              >
+                评价晒单
               </el-button>
               
               <el-button 

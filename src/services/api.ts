@@ -1,5 +1,5 @@
 import request from '@/utils/request'
-import type { User, Product, CartItem, BackendCartItem, CartResponse, Order, Address, LoginResponse, GoodType, BackendAddress, AddressRequest, Coupon, UserCoupon, AvailableCoupon, CouponCalculation, Favorite, FavoriteRequest, CaptchaResponse } from '@/types/api'
+import type { User, Product, CartItem, BackendCartItem, CartResponse, Order, Address, LoginResponse, GoodType, BackendAddress, AddressRequest, Coupon, UserCoupon, AvailableCoupon, CouponCalculation, Favorite, FavoriteRequest, CaptchaResponse, ProductComment, CommentPageResponse, CreateCommentRequest, ImageUploadResponse } from '@/types/api'
 
 // 用户相关API
 export const userApi = {
@@ -345,6 +345,11 @@ export const orderApi = {
   // 删除订单
   delete(orderId: string): Promise<void> {
     return request.delete('/orders/delete', { data: { orderId: orderId.toString() } })
+  },
+
+  // 查询订单状态
+  getOrderStatus(orderId: string): Promise<{ status: string }> {
+    return request.get('/order/status', { params: { orderId: orderId.toString() } })
   }
 }
 
@@ -546,6 +551,74 @@ export const favoriteApi = {
       params: { productId } 
     }).then((response: any) => {
       return { isFavorite: response.data || response || false }
+    })
+  }
+}
+
+// 评论相关API
+export const commentApi = {
+  // 获取商品评论（分页）
+  getProductComments: async (productId: number, page: number = 1, size: number = 10) => {
+    const response = await request.get<CommentPageResponse>(`/comments/product/${productId}`, {
+      params: { page, size }
+    })
+    return response
+  },
+
+  // 获取热门评论
+  getHotComments: async (productId: number, limit: number = 3) => {
+    const response = await request.get<CommentPageResponse>(`/comments/product/${productId}/hot`, {
+      params: { limit }
+    })
+    return response
+  },
+
+  // 获取用户评论（分页）
+  getUserComments: async (page: number = 1, size: number = 10) => {
+    const response = await request.get<CommentPageResponse>('/comments/user', {
+      params: { page, size }
+    })
+    return response
+  },
+
+  // 创建评论
+  createComment: async (data: CreateCommentRequest) => {
+    const response = await request.post<ProductComment>('/comments', data)
+    return response
+  },
+
+  // 删除评论
+  deleteComment: async (commentId: number) => {
+    const response = await request.delete(`/comments/${commentId}`)
+    return response
+  },
+
+  // 点赞评论
+  likeComment: async (commentId: number) => {
+    const response = await request.post(`/comments/${commentId}/like`)
+    return response
+  },
+
+  // 取消点赞评论
+  unlikeComment: async (commentId: number) => {
+    const response = await request.delete(`/comments/${commentId}/like`)
+    return response
+  }
+}
+
+// 图片上传API
+export const uploadApi = {
+  // 上传图片
+  uploadImage(file: File): Promise<string> {
+    const formData = new FormData()
+    formData.append('avatar', file)
+    return request.post('/upload/image', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    }).then((response: any) => {
+      // 响应拦截器已经返回了data字段，response就是URL字符串
+      return response
     })
   }
 }

@@ -234,3 +234,55 @@ export interface Favorite {
 export interface FavoriteRequest {
   productId: number // 商品ID
 }
+
+// 评论相关类型
+// 商品评论
+export interface ProductComment {
+  id: number // 评论ID
+  userId: number // 用户ID
+  productId: number // 商品ID
+  rating: number // 评分(1-5分)
+  content: string // 富文本评论内容（含图片标签）
+  images: string[]
+  likeCount: number // 点赞数
+  replyCount: number
+  createdAt: string // 创建时间
+  updatedAt: string
+  username: string // 用户昵称
+  userAvatar: string // 用户头像URL
+  isLiked: boolean // 是否已点赞
+  // API响应中的字段
+  nickName: string // 用户昵称（API返回字段）
+  avatar: string // 用户头像URL（API返回字段）
+  // 用户评价页面需要的额外字段
+  productName?: string
+  productImage?: string
+  productPrice?: number
+  // 关联的用户信息
+  user?: {
+    nickname: string // 用户昵称
+    avatarUrl: string // 用户头像URL
+  }
+}
+
+// 评论分页响应
+export interface CommentPageResponse {
+  records: ProductComment[] // 评论列表
+  total: number // 总数
+  pages: number // 总页数
+  current: number // 当前页
+  size: number // 每页大小
+}
+
+// 发布评论请求
+export interface CreateCommentRequest {
+  productId: number // 商品ID
+  rating: number // 评分(1-5分)
+  content: string // 富文本评论内容
+  orderId?: number // 订单ID（可选）
+}
+
+// 图片上传响应
+export interface ImageUploadResponse {
+  url: string // 图片URL
+}

@@ -245,15 +245,15 @@ const loadUserCoupons = async () => {
     couponLoading.value = true
     const allCoupons = await couponApi.getUserCoupons()
     
-    // 过滤掉已过期的优惠券，只显示未使用和已使用的
-    const validCoupons = allCoupons.filter(coupon => coupon.status !== 3)
+    // 只显示未使用的优惠券（状态为1）
+    const validCoupons = allCoupons.filter(coupon => coupon.status === 1)
     
     // 分类优惠券：可用于当前订单的和不可用的
     const usable: UserCoupon[] = []
     const unusable: UserCoupon[] = []
     
     validCoupons.forEach(coupon => {
-      if (coupon.status === 1 && coupon.coupon && subtotalPrice.value >= coupon.coupon.minAmount) {
+      if (coupon.coupon && subtotalPrice.value >= coupon.coupon.minAmount) {
         usable.push(coupon)
       } else {
         unusable.push(coupon)
@@ -500,7 +500,7 @@ const submitOrder = async () => {
             </div>
             <el-button 
               v-if="addresses.length > 1" 
-              type="text" 
+              link 
               :icon="Edit" 
               @click="showAddressSelector = true"
             >

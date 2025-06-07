@@ -3,7 +3,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { SuccessFilled, CircleCloseFilled } from '@element-plus/icons-vue'
-import axios from 'axios'
+import { orderApi } from '@/services/api'
 
 const router = useRouter()
 const loading = ref(true)
@@ -26,9 +26,9 @@ const checkPaymentStatus = async () => {
     orderId.value = outTradeNo
     
     // 查询支付状态
-    const response = await axios.get(`/api/order/status?orderId=${outTradeNo}`)
+    const response = await orderApi.getOrderStatus(outTradeNo)
     
-    if (response.data.status === 'TRADE_SUCCESS') {
+    if (response.status === 'TRADE_SUCCESS') {
       paymentStatus.value = 'success'
       // 保存支付成功信息到localStorage
       localStorage.setItem('lastOrderId', outTradeNo)

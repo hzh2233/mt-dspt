@@ -148,6 +148,29 @@ const goBack = () => {
   router.push('/user/orders')
 }
 
+// 跳转到评价页面
+const goToComment = (productId: number) => {
+  if (!orderDetail.value) return
+  
+  // 找到对应的商品项
+  const item = orderDetail.value.items?.find(item => item.good.goodId === productId)
+  if (!item) {
+    ElMessage.error('商品信息不存在')
+    return
+  }
+  
+  // 将商品数据作为数组传递（保持与订单评价的一致性）
+  const itemsData = [item]
+  
+  router.push({
+    path: '/create-comment',
+    query: {
+      items: JSON.stringify(itemsData),
+      from: 'order-detail' // 添加来源标识
+    }
+  })
+}
+
 // 处理退款
 const handleRefund = async () => {
   if (!orderDetail.value) return
@@ -309,11 +332,20 @@ onMounted(() => {
             </div>
             <div class="item-info">
               <div class="item-name">{{ item.good.goodName }}</div>
-              <div class="item-desc">{{ item.good.description }}</div>
               <div class="item-price-info">
                 <span class="unit-price">单价: ¥{{ item.unitPrice.toFixed(2) }}</span>
                 <span class="quantity">数量: {{ item.quantity }}</span>
                 <span class="subtotal">小计: ¥{{ item.subtotal.toFixed(2) }}</span>
+              </div>
+              <!-- 评价按钮 -->
+              <div class="item-actions" v-if="orderDetail.status === 3">
+                <el-button 
+                  type="primary" 
+                  size="small"
+                  @click="goToComment(item.good.goodId)"
+                >
+                  评价晒单
+                </el-button>
               </div>
             </div>
           </div>
@@ -541,12 +573,7 @@ onMounted(() => {
   font-weight: 600;
   color: #2c3e50;
   line-height: 1.4;
-}
-
-.item-desc {
-  color: #909399;
-  font-size: 14px;
-  line-height: 1.4;
+  margin-bottom: 8px;
 }
 
 .item-price-info {
@@ -592,6 +619,20 @@ onMounted(() => {
   font-size: 20px;
   font-weight: 700;
   color: #f56c6c;
+}
+
+/* 商品项操作按钮 */
+.item-actions {
+  margin-top: 12px;
+  display: flex;
+  gap: 8px;
+}
+
+.item-actions .el-button {
+  border-radius: 16px;
+  padding: 6px 16px;
+  font-size: 12px;
+  font-weight: 500;
 }
 
 /* 订单操作 */

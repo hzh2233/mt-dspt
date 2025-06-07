@@ -114,5 +114,23 @@ export const routes: RouteRecordRaw[] = [
     name: 'user-security',
     component: () => import('@/views/UserSecurityView.vue'),
     meta: { title: '账户安全', requiresAuth: true }
+  },
+  {
+    path: '/product/:id/comments',
+    name: 'comments',
+    component: () => import('@/views/CommentsView.vue'),
+    meta: { title: '商品评价' }
+  },
+  {
+    path: '/user/comments',
+    name: 'user-comments',
+    component: () => import('@/views/UserCommentsView.vue'),
+    meta: { title: '我的评价', requiresAuth: true }
+  },
+  {
+    path: '/create-comment',
+    name: 'create-comment',
+    component: () => import('@/views/CreateCommentView.vue'),
+    meta: { requiresAuth: true }
   }
 ]

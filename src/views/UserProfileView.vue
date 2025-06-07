@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted, computed, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { User, Location, Document, Check, ShoppingCart, Plus, Ticket, ArrowRight, Setting, Lock, Bell, Star, Edit, Camera, Phone } from '@element-plus/icons-vue'
+import { User, Location, Document, Check, ShoppingCart, Plus, Ticket, ArrowRight, Setting, Lock, Bell, Star, Edit, Camera, Phone, ChatDotRound } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
 import { useOrderStore } from '@/stores/order'
 import { useCartStore } from '@/stores/cart'
@@ -32,6 +32,10 @@ watch(() => userStore.userInfo, (newUserInfo) => {
 
 // 头像文件
 const avatarFile = ref<File | null>(null)
+// 头像相关状态
+const avatarLoading = ref(false)
+const showAvatarSaveBtn = ref(false)
+const newAvatarUrl = ref('')
 
 // 加载状态
 const loading = ref(false)
@@ -127,32 +131,20 @@ onMounted(async () => {
   await loadAddresses()
 })
 
-// 更新用户信息
+// 更新用户信息（不包含头像）
 const updateUserInfo = async () => {
   loading.value = true
   
   try {
-    let avatarUrl = userForm.avatarUrl
-    
-    if (avatarFile.value) {
-      try {
-        const result = await userApi.uploadAvatar(avatarFile.value)
-        avatarUrl = result.avatarUrl
-        ElMessage.success('头像上传成功')
-      } catch (error) {
-        console.error('头像上传失败', error)
-        ElMessage.error('头像上传失败')
-        return
-      }
-    }
-    
     const updateData: { nickname: string, phone: string, avatarUrl?: string } = {
       nickname: userForm.nickname,
       phone: userForm.phone
     }
     
-    if (avatarUrl && avatarUrl.trim() !== '') {
-      updateData.avatarUrl = avatarUrl
+    // 保持当前的头像URL
+    const currentAvatarUrl = userStore.userInfo.avatarUrl
+    if (currentAvatarUrl && currentAvatarUrl.trim() !== '') {
+      updateData.avatarUrl = currentAvatarUrl
     }
     
     const updatedUser = await userApi.updateUserInfo(updateData)
@@ -160,12 +152,8 @@ const updateUserInfo = async () => {
     userStore.setUserInfo({
       ...userStore.userInfo,
       nickname: userForm.nickname,
-      phone: userForm.phone,
-      avatarUrl: avatarUrl
+      phone: userForm.phone
     })
-    
-    userForm.avatarUrl = avatarUrl
-    avatarFile.value = null
     
     ElMessage.success('个人信息更新成功')
   } catch (error) {
@@ -201,6 +189,11 @@ const goToOrders = () => {
   router.push('/user/orders')
 }
 
+// 跳转到我的评价页面
+const goToComments = () => {
+  router.push('/user/comments')
+}
+
 // 上传头像
 const handleAvatarUpload = (file: File) => {
   const isImage = file.type.startsWith('image/')
@@ -219,11 +212,52 @@ const handleAvatarUpload = (file: File) => {
   const reader = new FileReader()
   reader.onload = (e) => {
     userForm.avatarUrl = e.target?.result as string
+    showAvatarSaveBtn.value = true
   }
   reader.readAsDataURL(file)
   
-  ElMessage.success('头像已选择，点击保存修改完成上传')
+  ElMessage.success('头像已选择，点击保存按钮完成上传')
   return false
+}
+
+// 保存头像
+const saveAvatar = async () => {
+  if (!avatarFile.value) {
+    ElMessage.error('请先选择头像')
+    return
+  }
+
+  avatarLoading.value = true
+  try {
+    const result = await userApi.uploadAvatar(avatarFile.value)
+    newAvatarUrl.value = result.avatarUrl
+    
+    // 更新用户信息中的头像URL
+    const updateData = {
+      nickname: userStore.userInfo.nickname || '',
+      phone: userStore.userInfo.phone || '',
+      avatarUrl: result.avatarUrl
+    }
+    
+    await userApi.updateUserInfo(updateData)
+    
+    // 更新本地状态
+    userStore.setUserInfo({
+      ...userStore.userInfo,
+      avatarUrl: result.avatarUrl
+    })
+    
+    userForm.avatarUrl = result.avatarUrl
+    avatarFile.value = null
+    showAvatarSaveBtn.value = false
+    
+    ElMessage.success('头像保存成功')
+  } catch (error) {
+    console.error('头像保存失败', error)
+    ElMessage.error('头像保存失败')
+  } finally {
+    avatarLoading.value = false
+  }
 }
 </script>
 
@@ -252,6 +286,17 @@ const handleAvatarUpload = (file: File) => {
                 <el-icon><Camera /></el-icon>
               </div>
             </el-upload>
+            <!-- 头像保存按钮 -->
+            <el-button 
+              v-if="showAvatarSaveBtn"
+              type="primary"
+              size="small"
+              :loading="avatarLoading"
+              @click="saveAvatar"
+              class="avatar-save-btn"
+            >
+              保存头像
+            </el-button>
           </div>
           <div class="user-info">
             <h2 class="user-name">{{ userStore.userInfo.nickname || '用户' }}</h2>
@@ -372,6 +417,20 @@ const handleAvatarUpload = (file: File) => {
               <div class="action-content">
                 <div class="action-title">优惠券</div>
                 <div class="action-desc">我的优惠券</div>
+              </div>
+              <div class="action-arrow">
+                <el-icon><ArrowRight /></el-icon>
+              </div>
+            </div>
+          </el-col>
+          <el-col :xs="12" :sm="8" :md="6">
+            <div class="action-card comments" @click="goToComments">
+              <div class="action-icon">
+                <el-icon><ChatDotRound /></el-icon>
+              </div>
+              <div class="action-content">
+                <div class="action-title">我的评价</div>
+                <div class="action-desc">查看我的评价</div>
               </div>
               <div class="action-arrow">
                 <el-icon><ArrowRight /></el-icon>
@@ -531,6 +590,10 @@ const handleAvatarUpload = (file: File) => {
   
   .avatar-container {
     position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
     
     .user-avatar {
       border: 4px solid rgba(255, 255, 255, 0.3);
@@ -540,7 +603,7 @@ const handleAvatarUpload = (file: File) => {
     
     .avatar-upload {
       position: absolute;
-      bottom: 0;
+      bottom: 12px;
       right: 0;
       
       .upload-overlay {
@@ -560,6 +623,27 @@ const handleAvatarUpload = (file: File) => {
           transform: scale(1.1);
           box-shadow: 0 6px 20px rgba(64, 158, 255, 0.6);
         }
+      }
+    }
+    
+    .avatar-save-btn {
+      background: linear-gradient(135deg, #67c23a 0%, #85ce61 100%);
+      border: none;
+      border-radius: 20px;
+      padding: 8px 20px;
+      font-size: 12px;
+      font-weight: 600;
+      color: white;
+      box-shadow: 0 4px 12px rgba(103, 194, 58, 0.4);
+      transition: all 0.3s ease;
+      
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(103, 194, 58, 0.6);
+      }
+      
+      &.is-loading {
+        opacity: 0.8;
       }
     }
   }
@@ -724,6 +808,10 @@ const handleAvatarUpload = (file: File) => {
     
     &.coupons .action-icon {
       background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+    }
+    
+    &.comments .action-icon {
+      background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
     }
     
     .action-content {

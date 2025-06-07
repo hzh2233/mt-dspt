@@ -125,26 +125,28 @@ const openAddressDialog = (address?: BackendAddress) => {
 
 // 处理地址选择器变化
 const handleAddressChange = (region: any) => {
-  if (region && region.length === 3) {
-    const [province, city, district] = region
-    selectedRegion.value = {
-      provinceCode: province.code,
-      provinceName: province.name,
-      cityCode: city.code,
-      cityName: city.name,
-      districtCode: district.code,
-      districtName: district.name
-    }
+  console.log('地址选择器变化:', region)
+  
+  if (region) {
+    // region是AddressSelector返回的SelectedRegion对象
+    selectedRegion.value = region
     
     Object.assign(addressForm, {
-      provinceCode: province.code,
-      provinceName: province.name,
-      cityCode: city.code,
-      cityName: city.name,
-      districtCode: district.code,
-      districtName: district.name,
-      region: `${province.code}-${city.code}-${district.code}`
+      provinceCode: region.provinceCode,
+      provinceName: region.provinceName,
+      cityCode: region.cityCode,
+      cityName: region.cityName,
+      districtCode: region.districtCode,
+      districtName: region.districtName,
+      region: `${region.provinceCode}-${region.cityCode}-${region.districtCode}`
     })
+    
+    console.log('更新后的addressForm.region:', addressForm.region)
+    
+    // 手动触发表单验证
+    if (addressFormRef.value) {
+      addressFormRef.value.validateField('region')
+    }
   } else {
     selectedRegion.value = null
     Object.assign(addressForm, {
@@ -156,6 +158,8 @@ const handleAddressChange = (region: any) => {
       districtName: '',
       region: ''
     })
+    
+    console.log('清空后的addressForm.region:', addressForm.region)
   }
 }
 
@@ -256,6 +260,17 @@ const goBack = () => {
   router.push('/profile')
 }
 
+// 自定义验证器：验证地址是否已选择
+const validateRegion = (rule: any, value: any, callback: any) => {
+  console.log('验证region字段:', value, 'selectedRegion:', selectedRegion.value)
+  
+  if (!value || !selectedRegion.value) {
+    callback(new Error('请选择所在地区'))
+  } else {
+    callback()
+  }
+}
+
 // 表单验证规则
 const addressRules = {
   receiver: [
@@ -266,7 +281,7 @@ const addressRules = {
     { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号码', trigger: 'blur' }
   ],
   region: [
-    { required: true, message: '请选择所在地区', trigger: 'change' }
+    { validator: validateRegion, trigger: 'change' }
   ],
   detailAddress: [
     { required: true, message: '请输入详细地址', trigger: 'blur' }
@@ -281,7 +296,7 @@ const addressRules = {
       <div class="header-content">
         <div class="header-left">
           <el-button 
-            type="text" 
+            link 
             :icon="ArrowLeft" 
             @click="goBack"
             class="back-btn"
@@ -333,18 +348,20 @@ const addressRules = {
             
             <!-- 地址信息 -->
             <div class="address-info">
+              <!-- 地址标签 -->
+              <el-tag 
+                :type="address.isDefault === 1 ? 'warning' : 'info'" 
+                size="small"
+                class="address-tag"
+              >
+                {{ address.tag }}
+              </el-tag>
+              
               <div class="address-header">
                 <div class="receiver-info">
                   <span class="receiver-name">{{ address.receiver }}</span>
                   <span class="receiver-phone">{{ address.phone }}</span>
                 </div>
-                <el-tag 
-                  :type="address.isDefault === 1 ? 'success' : 'info'" 
-                  size="small"
-                  class="address-tag"
-                >
-                  {{ address.tag }}
-                </el-tag>
               </div>
               
               <div class="address-detail">
@@ -356,7 +373,7 @@ const addressRules = {
             <!-- 操作按钮 -->
             <div class="address-actions">
               <el-button 
-                type="text" 
+                link 
                 :icon="Edit" 
                 @click="openAddressDialog(address)"
                 class="action-btn edit-btn"
@@ -366,7 +383,7 @@ const addressRules = {
               
               <el-button 
                 v-if="address.isDefault !== 1"
-                type="text" 
+                link 
                 @click="setDefaultAddress(address)"
                 class="action-btn default-btn"
               >
@@ -374,7 +391,7 @@ const addressRules = {
               </el-button>
               
               <el-button 
-                type="text" 
+                link 
                 :icon="Delete" 
                 @click="deleteAddress(address)"
                 class="action-btn delete-btn"
@@ -619,7 +636,7 @@ const addressRules = {
 .default-badge {
   position: absolute;
   top: 16px;
-  right: 16px;
+  right: 80px;
   display: flex;
   align-items: center;
   gap: 4px;
@@ -629,6 +646,7 @@ const addressRules = {
   border-radius: 12px;
   font-size: 12px;
   font-weight: 600;
+  z-index: 1;
 }
 
 .address-info {
@@ -664,6 +682,10 @@ const addressRules = {
 
 .address-tag {
   font-weight: 500;
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 2;
 }
 
 .address-detail {

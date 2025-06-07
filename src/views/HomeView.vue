@@ -352,7 +352,7 @@ const handleSearch = async () => {
           <span>{{ selectedCategoryId ? selectedCategoryName + '商品' : '推荐商品' }}</span>
           <el-button 
             v-if="selectedCategoryId" 
-            type="text" 
+            link 
             @click="resetToRecommended"
             style="float: right;"
           >
